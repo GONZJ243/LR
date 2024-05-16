@@ -1,6 +1,7 @@
-# This script corresponds to LATAM's comprehensive Lost Revenue calculation tool. This tool processes raw data from multiple Dataiku DSS data sources, cleans, process it, performs statistical prompts,
-# generates editable data tables, and stores manually-entered inputs into Snowflake databases. It includes modules for data entrance, visualizations, change logs, and data validation.
-
+'''
+This script corresponds to LATAM's comprehensive Lost Revenue calculation tool. This tool processes raw data from multiple Dataiku DSS data sources, cleans, process it, performs statistical prompts,
+generates editable data tables, and stores manually-entered inputs into Snowflake databases. It includes modules for data entrance, visualizations, change logs, and data validation.
+'''
 
 # Importing necessary packages for interaction with dataiku
 import dataiku
