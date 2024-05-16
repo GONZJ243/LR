@@ -24,7 +24,7 @@ import logging
 from flask import request
 
 # Importing CSS styling frameworks
-app.config.external_stylesheets = [dbc.themes.MATERIA, dbc.icons.BOOTSTRAP]
+app.config.external_stylesheets = [dbc.themes.MATERIA, dbc.icons.BOOTSTRAP,'https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap']
 app.config.suppress_callback_exceptions = True
 
 
@@ -175,6 +175,18 @@ def serve_layout():
     | Logo | Spacer | Header | Feedback | Documentation | Username |
     
     '''
+    modal = dbc.Modal(
+        [
+            dbc.ModalHeader('Changes are being applied',close_button=False, id='modal-header'),
+            dbc.ModalBody("Your changes are now being processed! Please allow us a couple of seconds to finish the backend processes.", id='modal-body'),
+        ],
+        id="modal-centered",
+        centered=True,
+        is_open=False,
+        keyboard=False,
+        backdrop="static",
+    )
+    
     navbar = dbc.Container(
         dbc.Row(
             [
@@ -188,9 +200,26 @@ def serve_layout():
                     align='center'
                 ),
                 dbc.Col(
-                    html.H1('LATAM Lost Revenue Application'),
-                    id='navbar_spacer',
-                    width=8
+                    html.H1(
+                        'LATAM Lost Revenue Application',
+                        style={
+                            'font-family':'Roboto',
+                            'font-weight': '200',
+                            'font-size':'60px',
+                            'font-style':'normal',
+                            'color':'#0000C9'
+                        }
+                   ),
+                   id='navbar_spacer',
+                   width=6
+                ),
+                dbc.Col(
+                    dcc.Store(id='trigger-memory'),
+                    width=1
+                ),
+                dbc.Col(
+                    dcc.Store(id='status-memory'),
+                    width=1
                 ),
                 dbc.Col(
                     dbc.Button(
@@ -210,7 +239,9 @@ def serve_layout():
                            'justify':'center',
                            'align':'center',
                            'text-transform':'capitalize',
-                           'box-shadow':'None'
+                           'box-shadow':'None',
+                           'font-size':'14px'
+                           
                        }
                    ),
                     id='navbar_feedback',
@@ -234,7 +265,8 @@ def serve_layout():
                            'justify':'center',
                            'align':'center',
                            'text-transform':'capitalize',
-                           'box-shadow':'None'
+                           'box-shadow':'None',
+                           'font-size':'14px'
                        }
                    ),
                     id='navbar_doc',
@@ -242,7 +274,7 @@ def serve_layout():
                 ),
                 dbc.Col(
                     dbc.Button(
-                       username,
+                       f" Hi, {username}",
                        href='',
                        target='_blank',
                        style={
@@ -257,8 +289,9 @@ def serve_layout():
                            'height':'50px',
                            'justify':'center',
                            'align':'center',
-                           'text-transform':'capitalize',
-                           'box-shadow':'None'
+                           'text-transform':'uppercase',
+                           'box-shadow':'None',
+                           'font-size':'14px'
                        },
                    ),
                     id='navbar_user',
@@ -280,45 +313,67 @@ def serve_layout():
     )
     
     #Defining main page's content layout
+    '''
+    Main content will look like:
+    
+    |       NAVBAR        |
+     ---------------------
+    |              | GRID |
+    | FILTERS PANE |------|
+    |              | SIQ  |
+    
+    '''
     content = dbc.Container([
-        html.Div(dcc.ConfirmDialog(id='confirm-save',message='Changes have been properly saved!')),
         dbc.Row([
             #Leftmost column will include two main sections: dropdown selection filters, and item selection table
             dbc.Col([
-                dbc.Row([html.Hr(),html.P('Item Overview')]),
+                dbc.Row(
+                    [
+                        html.P(
+                            'Item Overview',
+                            style={
+                                'font-family':'Roboto',
+                                'font-weight': '350',
+                                'font-size':'14px',
+                                'font-style':'normal',
+                                'color':'#0000C9'
+                            }
+                        )
+                    ]
+                ),
                 dbc.Row([
                     #Defining dropdown filters, each filter will include an APPLY button to propagate values, and recalculate relevant values on all other dropdowns
                     dbc.Col([
-                        dbc.Row(html.Label('Sub Region')),
+                        dbc.Row(html.Label('Sub Region',style={'font-family':'Roboto','font-weight': '400','font-size':'11px','font-style':'normal','color':'#0000C9'})),
                         dbc.Row([
-                            dbc.Col(dcc.Dropdown(id='f_srg_dd',options=s['SUB_REGION_DESC'], multi=True),width=8),
-                            dbc.Col(dbc.Button('Apply',id='apply-srg',n_clicks=0, className="btn btn-secondary btn-sm"),width=1)
+                            dbc.Col(dcc.Dropdown(id='f_srg_dd',options=s['SUB_REGION_DESC'], multi=True, style={'font-family':'Roboto'}),width=8),
+                            dbc.Col(dbc.Button('Apply',id='apply-srg',n_clicks=0,style={'color':'#0000C9','background-color':'white','border-color':'#0000C9','border-style':'solid','border-width':'1px','font-family':'Roboto','height':'80%','justify':'center','align':'center','text-transform':'capitalize','box-shadow':'None','font-size':'10px'}),width=4)
                         ])
                     ]),
                     
                     dbc.Col([
-                        dbc.Row(html.Label('Cluster')),
+                        dbc.Row(html.Label('Cluster',style={'font-family':'Roboto','font-weight': '400','font-size':'11px','font-style':'normal','color':'#0000C9'})),
                         dbc.Row([
                             dbc.Col(dcc.Dropdown(id='f_clu_dd',options=s['CLUSTER_DESC'], multi=True),width=8),
-                            dbc.Col(dbc.Button('Apply',id='apply-clu',n_clicks=0, className="btn btn-secondary btn-sm"),width=1)
+                            dbc.Col(dbc.Button('Apply',id='apply-clu',n_clicks=0, style={'color':'#0000C9','background-color':'white','border-color':'#0000C9','border-style':'solid','border-width':'1px','font-family':'Roboto','height':'80%','justify':'center','align':'center','text-transform':'capitalize','box-shadow':'None','font-size':'10px'}),width=4)
                         ])
                     ]),
                 ], style={'font-size':'11px'}),
                 
                 dbc.Row([
                     dbc.Col([
-                        dbc.Row(html.Label('Market ')),
+                        dbc.Row(html.Label('Market',style={'font-family':'Roboto','font-weight': '400','font-size':'11px','font-style':'normal','color':'#0000C9'})),
                         dbc.Row([
                             dbc.Col(dcc.Dropdown(id='f_mkt_dd',options=s['MARKET_DESC'], multi=True),width=8),
-                            dbc.Col(dbc.Button('Apply',id='apply-mkt',n_clicks=0, className="btn btn-secondary btn-sm"),width=1)
+                            dbc.Col(dbc.Button('Apply',id='apply-mkt',n_clicks=0, style={'color':'#0000C9','background-color':'white','border-color':'#0000C9','border-style':'solid','border-width':'1px','font-family':'Roboto','height':'80%','justify':'center','align':'center','text-transform':'capitalize','box-shadow':'None','font-size':'10px'}),width=4)
                         ])
                     ]),
                     
                     dbc.Col([
-                        dbc.Row(html.Label('Sub BU')),
+                        dbc.Row(html.Label('Sub BU',style={'font-family':'Roboto','font-weight': '400','font-size':'11px','font-style':'normal','color':'#0000C9'})),
                         dbc.Row([
                             dbc.Col(dcc.Dropdown(id='f_sbu_dd',options=s['SUB_BUSINESS_UNIT_DESC'], multi=True),width=8),
-                            dbc.Col(dbc.Button('Apply',id='apply-sbu',n_clicks=0, className="btn btn-secondary btn-sm"),width=1)
+                            dbc.Col(dbc.Button('Apply',id='apply-sbu',n_clicks=0, style={'color':'#0000C9','background-color':'white','border-color':'#0000C9','border-style':'solid','border-width':'1px','font-family':'Roboto','height':'80%','justify':'center','align':'center','text-transform':'capitalize','box-shadow':'None','font-size':'10px'}),width=4)
                         ])
                     ]),
                 ], style={'font-size':'11px'}),
@@ -326,81 +381,81 @@ def serve_layout():
                 
                 dbc.Row([
                     dbc.Col([
-                        dbc.Row(html.Label('Product')),
+                        dbc.Row(html.Label('Product',style={'font-family':'Roboto','font-weight': '400','font-size':'11px','font-style':'normal','color':'#0000C9'})),
                         dbc.Row([
                             dbc.Col(dcc.Dropdown(id='f_bnd_dd',options=s['PRODUCT_DESC'], multi=True),width=8),
-                            dbc.Col(dbc.Button('Apply',id='apply-bnd',n_clicks=0, className="btn btn-secondary btn-sm"),width=1)
+                            dbc.Col(dbc.Button('Apply',id='apply-bnd',n_clicks=0, style={'color':'#0000C9','background-color':'white','border-color':'#0000C9','border-style':'solid','border-width':'1px','font-family':'Roboto','height':'80%','justify':'center','align':'center','text-transform':'capitalize','box-shadow':'None','font-size':'10px'}),width=4)
                         ])
                     ]),
                     
                     dbc.Col([
-                        dbc.Row(html.Label('RSL')),
+                        dbc.Row(html.Label('RSL',style={'font-family':'Roboto','font-weight': '400','font-size':'11px','font-style':'normal','color':'#0000C9'})),
                         dbc.Row([
                             dbc.Col(dcc.Dropdown(id='f_rsl_dd',options=s['REGIONAL_SUPPLY_LEADER'], multi=True),width=8),
-                            dbc.Col(dbc.Button('Apply',id='apply-rsl',n_clicks=0, className="btn btn-secondary btn-sm"),width=1)
+                            dbc.Col(dbc.Button('Apply',id='apply-rsl',n_clicks=0, style={'color':'#0000C9','background-color':'white','border-color':'#0000C9','border-style':'solid','border-width':'1px','font-family':'Roboto','height':'80%','justify':'center','align':'center','text-transform':'capitalize','box-shadow':'None','font-size':'10px'}),width=4)
                         ])
                     ]),
                 ], style={'font-size':'11px'}),
                 
                 dbc.Row([
                     dbc.Col([
-                        dbc.Row(html.Label('Source')),
+                        dbc.Row(html.Label('Source',style={'font-family':'Roboto','font-weight': '400','font-size':'11px','font-style':'normal','color':'#0000C9'})),
                         dbc.Row([
                             dbc.Col(dcc.Dropdown(id='f_src_dd',options=s['SOURCE_DESC'], multi=True),width=8),
-                            dbc.Col(dbc.Button('Apply',id='apply-src',n_clicks=0, className="btn btn-secondary btn-sm"),width=1)
+                            dbc.Col(dbc.Button('Apply',id='apply-src',n_clicks=0, style={'color':'#0000C9','background-color':'white','border-color':'#0000C9','border-style':'solid','border-width':'1px','font-family':'Roboto','height':'80%','justify':'center','align':'center','text-transform':'capitalize','box-shadow':'None','font-size':'10px'}),width=4)
                         ])
                     ]),
                     
                     dbc.Col([
-                        dbc.Row(html.Label('Segment')),
+                        dbc.Row(html.Label('Segment',style={'font-family':'Roboto','font-weight': '400','font-size':'11px','font-style':'normal','color':'#0000C9'})),
                         dbc.Row([
                             dbc.Col(dcc.Dropdown(id='f_seg_dd',options=s['SEGMENT'], multi=True),width=8),
-                            dbc.Col(dbc.Button('Apply',id='apply-seg',n_clicks=0, className="btn btn-secondary btn-sm"),width=1)
+                            dbc.Col(dbc.Button('Apply',id='apply-seg',n_clicks=0, style={'color':'#0000C9','background-color':'white','border-color':'#0000C9','border-style':'solid','border-width':'1px','font-family':'Roboto','height':'80%','justify':'center','align':'center','text-transform':'capitalize','box-shadow':'None','font-size':'10px'}),width=4)
                         ])
                     ]),
                 ], style={'font-size':'11px'}),
                
                 dbc.Row([
                     dbc.Col([
-                        dbc.Row(html.Label('AMP Planner')),
+                        dbc.Row(html.Label('AMP Planner',style={'font-family':'Roboto','font-weight': '400','font-size':'11px','font-style':'normal','color':'#0000C9'})),
                         dbc.Row([
                             dbc.Col(dcc.Dropdown(id='f_amp_dd',options=s['ABOVE_MARKET_PLANNER_DESC'], multi=True),width=8),
-                            dbc.Col(dbc.Button('Apply',id='apply-amp',n_clicks=0, className="btn btn-secondary btn-sm"),width=1)
+                            dbc.Col(dbc.Button('Apply',id='apply-amp',n_clicks=0, style={'color':'#0000C9','background-color':'white','border-color':'#0000C9','border-style':'solid','border-width':'1px','font-family':'Roboto','height':'80%','justify':'center','align':'center','text-transform':'capitalize','box-shadow':'None','font-size':'10px'}),width=4)
                         ])
                     ]),
                     
                     dbc.Col([
-                        dbc.Row(html.Label('Demand Planner')),
+                        dbc.Row(html.Label('Demand Planner',style={'font-family':'Roboto','font-weight': '400','font-size':'11px','font-style':'normal','color':'#0000C9'})),
                         dbc.Row([
                             dbc.Col(dcc.Dropdown(id='f_dem_dd',options=s['DEMAND_PLANNER_ID'], multi=True),width=8),
-                            dbc.Col(dbc.Button('Apply',id='apply-dem',n_clicks=0, className="btn btn-secondary btn-sm"),width=1)
+                            dbc.Col(dbc.Button('Apply',id='apply-dem',n_clicks=0, style={'color':'#0000C9','background-color':'white','border-color':'#0000C9','border-style':'solid','border-width':'1px','font-family':'Roboto','height':'80%','justify':'center','align':'center','text-transform':'capitalize','box-shadow':'None','font-size':'10px'}),width=4)
                         ])
                     ]),
                 ], style={'font-size':'11px'}),
 
                 dbc.Row([
                     dbc.Col([
-                        dbc.Row(html.Label('Demand Analyst')),
+                        dbc.Row(html.Label('Demand Analyst',style={'font-family':'Roboto','font-weight': '400','font-size':'11px','font-style':'normal','color':'#0000C9'})),
                         dbc.Row([
                             dbc.Col(dcc.Dropdown(id='f_dan_dd',options=s['DEMAND_ANALYST_DESC'], multi=True),width=8),
-                            dbc.Col(dbc.Button('Apply',id='apply-dan',n_clicks=0, className="btn btn-secondary btn-sm"),width=1)
+                            dbc.Col(dbc.Button('Apply',id='apply-dan',n_clicks=0, style={'color':'#0000C9','background-color':'white','border-color':'#0000C9','border-style':'solid','border-width':'1px','font-family':'Roboto','height':'80%','justify':'center','align':'center','text-transform':'capitalize','box-shadow':'None','font-size':'10px'}),width=4)
                         ])
                     ]),
                     
                     dbc.Col([
-                        dbc.Row(html.Label('Material')),
+                        dbc.Row(html.Label('Material',style={'font-family':'Roboto','font-weight': '400','font-size':'11px','font-style':'normal','color':'#0000C9'})),
                         dbc.Row([
                             dbc.Col(dcc.Dropdown(id='f_mat_dd',options=s['MATERIAL_KEY'], multi=True),width=8),
-                            dbc.Col(dbc.Button('Apply',id='apply-mat',n_clicks=0, className="btn btn-secondary btn-sm"),width=1)
+                            dbc.Col(dbc.Button('Apply',id='apply-mat',n_clicks=0, style={'color':'#0000C9','background-color':'white','border-color':'#0000C9','border-style':'solid','border-width':'1px','font-family':'Roboto','height':'80%','justify':'center','align':'center','text-transform':'capitalize','box-shadow':'None','font-size':'10px'}),width=4)
                         ])
                     ]),
                 ], style={'font-size':'11px'}),
                
 
                 dbc.Row([
-                    dbc.Col([html.Label('LR YTD? '),dcc.Dropdown(['True'], id='f_lr_ytd', multi=False)]),
-                    dbc.Col([html.Label('LR YTG? '),dcc.Dropdown(['True'], id='f_lr_ytg', multi=False)]),
-                    dbc.Col([html.Label('LR FY? '),dcc.Dropdown(['True'], id='f_lr_fy', multi=False)])
+                    dbc.Col([html.Label('LR YTD? ',style={'font-family':'Roboto','font-weight': '400','font-size':'11px','font-style':'normal','color':'#0000C9'}),dcc.Dropdown(['True'], id='f_lr_ytd', multi=False)]),
+                    dbc.Col([html.Label('LR YTG? ',style={'font-family':'Roboto','font-weight': '400','font-size':'11px','font-style':'normal','color':'#0000C9'}),dcc.Dropdown(['True'], id='f_lr_ytg', multi=False)]),
+                    dbc.Col([html.Label('LR FY? ',style={'font-family':'Roboto','font-weight': '400','font-size':'11px','font-style':'normal','color':'#0000C9'}),dcc.Dropdown(['True'], id='f_lr_fy', multi=False)])
                 ], style={'font-size':'11px'}),
 
                 html.Hr(),
@@ -408,12 +463,44 @@ def serve_layout():
             ], width = 3),
 
             dbc.Col([
-                html.Hr(),
-                html.P('LATAM Lost Revenue'),
+                html.P(
+                    'LATAM Lost Revenue',
+                    style={
+                                'font-family':'Roboto',
+                                'font-weight': '350',
+                                'font-size':'14px',
+                                'font-style':'normal',
+                                'color':'#0000C9'
+                            }
+                ),
+                dbc.Button(
+                   'Submit Changes',
+                   id='save-data-btn',
+                   n_clicks=0,
+                   style={
+                       'color':'#0000C9',
+                       'background-color':'white',
+                       'border-color':'#0000C9',
+                       'border-style':'solid',
+                       'border-width':'1px',
+                       'font-family':'Roboto',
+                       'border-radius':'45px',
+                       'width': '10%',
+                       'height':'50px',
+                       'justify':'center',
+                       'align':'center',
+                       'text-transform':'capitalize',
+                       'box-shadow':'None',
+                       'font-size':'14px',
+                       'margin':'20px'
+
+                   }
+               ),
+                
                 html.Div(id='output-details-ag-grid'),
                 html.Hr(),
                 dbc.Row([
-                    dbc.Col([dbc.Button('Submit Changes',id='save-data-btn', n_clicks=0, className="me-1")], width=3),
+                    dbc.Col(html.Div(id='tester-div')),
                     dbc.Col([html.Div(id='output-data-div')], width=3),
                     dbc.Col([dbc.Button('Reload Data',id='reload-data-btn', n_clicks=0, style={'display':'none'})], width=3),
                     dbc.Col([html.Div(id='output-data-refresh')], width=3)
@@ -426,7 +513,9 @@ def serve_layout():
         className="dbc dbc-row-selectable")
 
     layout_page_1 = html.Div([
+        modal,
         navbar,
+        html.Hr(),
         content
         ]
     )
@@ -608,7 +697,7 @@ def update_details(selected_rows):
                  {'headerName': 'OP','field': 'TOTAL_OP_UNITS_YTD',"valueFormatter": {"function": "d3.format(',.0f')(params.value)"}, "columnGroupShow": "open"},
                  {'headerName': 'Sales','field': 'TOTAL_SALES_YTD',"valueFormatter": {"function": "d3.format(',.0f')(params.value)"}, "columnGroupShow": "open"},
                  {'headerName': 'Excess Sales','field': 'TOTAL_EXCESS_SALES_YTD',"valueFormatter": {"function": "d3.format(',.0f')(params.value)"}, "columnGroupShow": "open"},
-                 {'headerName': 'SO Days','field': 'TOTAL_SO_DAYS_YTD',"valueFormatter": {"function": "d3.format(',.0f')(params.value)"},'cellDataType':'number','editable': True, 'cellStyle': {'background-color': '#FDF0B0'},'valueParser': {'function': 'Number(params.newValue)',"columnGroupShow": "open"}},
+                 {'headerName': 'SO Days','field': 'TOTAL_SO_DAYS_YTD',"valueFormatter": {"function": "d3.format(',.0f')(params.value)"},'cellDataType':'number','editable': True, 'cellStyle': {'background-color': '#FFE39E'},'valueParser': {'function': 'Number(params.newValue)',"columnGroupShow": "open"}},
                  {'headerName': 'SH Days','field': 'TOTAL_SH_DAYS_YTD','type':'numericColumn', "valueFormatter": {"function": "d3.format(',.0f')(params.value)"},'cellDataType':'number','valueParser': {'function': 'Number(params.newValue)'},"columnGroupShow": "open"},
                  {
                      'headerName': 'In Stock',
@@ -616,7 +705,7 @@ def update_details(selected_rows):
                      'valueGetter':{"function": "Number(params.data.TOTAL_SH_DAYS_YTD) === 0 ? 1 : 1-(Number(params.data.TOTAL_SO_DAYS_YTD) / Number(params.data.TOTAL_SH_DAYS_YTD))"},
                      'valueFormatter':{"function": "d3.format(',.1%')(params.value)"},
                      "columnGroupShow": "open",
-                     'cellStyle': {"function": "params.value < 1 ? {'background-color': '#ff8f8f'} : {'background-color': '#ffffff'}"}
+                     'cellStyle': {"function": "params.value < 1 ? {'background-color': '#FF9696'} : {'background-color': '#ffffff'}"}
                  },
                  
                  {
@@ -624,7 +713,7 @@ def update_details(selected_rows):
                      'field': 'manual_lrc_ytd',
                      'valueGetter':{"function": "params.getValue('manual_in_stock_ytd') < 1 && params.data.TOTAL_SALES_YTD < params.data.TOTAL_OP_UNITS_YTD ? Number(params.data.TOTAL_OP_UNITS_YTD) * (1 - params.getValue('manual_in_stock_ytd')) : 0"},
                      "valueFormatter": {"function": "d3.format(',.0f')(params.value)"},
-                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#ff8f8f'} : null"},
+                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#FF9696'} : null"},
                      "columnGroupShow": "open",
                      'hide':True
                  },
@@ -633,7 +722,7 @@ def update_details(selected_rows):
                      'field': 'manual_lrm_ytd',
                      'valueGetter':{"function": "params.getValue('manual_in_stock_ytd') < 1 && params.data.TOTAL_SALES_YTD < params.data.TOTAL_OP_UNITS_YTD ? Number(params.data.TOTAL_OP_UNITS_YTD) - params.data.TOTAL_SALES_YTD : 0"},
                      "valueFormatter": {"function": "d3.format(',.0f')(params.value)"},
-                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#ff8f8f'} : null"},
+                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#FF9696'} : null"},
                      "columnGroupShow": "open",
                      'hide':True
                      
@@ -644,25 +733,25 @@ def update_details(selected_rows):
                      'field': 'manual_lr_ytd',
                      'valueGetter':{"function": "(params.getValue('TOTAL_SALES_YTD') + params.getValue('manual_lrc_ytd')) > Number(params.data.TOTAL_OP_UNITS_YTD) ? params.getValue('manual_lrm_ytd') : params.getValue('manual_lrc_ytd')"},
                      "valueFormatter": {"function": "d3.format(',.0f')(params.value)"},
-                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#ff8f8f'} : null"},
+                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#FF9696'} : null"},
                      "columnGroupShow": "open",
-                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#ff8f8f'} : null"}
+                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#FF9696'} : null"}
                  },
                  {
                      'headerName': 'LR$',
                      'field': 'manual_lrusd_ytd',
                      'valueGetter':{"function": "params.getValue('manual_lr_ytd') * Number(params.data.ASP)"},
                      "valueFormatter": {"function": "d3.format('$,.0f')(params.value)"},
-                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#ff8f8f'} : null"}
+                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#FF9696'} : null"}
                  },
-                 {'headerName': 'UR$','field': 'TOTAL_DOLLARS_UR_YTD',"valueFormatter": {"function": "d3.format('$,.0f')(params.value)"},'cellStyle': {"function": "params.value > 0 ? {'background-color': '#92d050'} : null"}}
+                 {'headerName': 'UR$','field': 'TOTAL_DOLLARS_UR_YTD',"valueFormatter": {"function": "d3.format('$,.0f')(params.value)"},'cellStyle': {"function": "params.value > 0 ? {'background-color': '#B8E8B3'} : null"}}
              ]
             },
             
             {'headerName': 'Quarter 1',
              'children': [
                  {'headerName': 'OP','field': 'OP_UNITS_YTG_Q1',"valueFormatter": {"function": "d3.format(',.0f')(params.value)"}, 'hide':q1_toggle},
-                 {'headerName': 'SO Days','field': 'PROJ_SO_DAYS_Q1',"valueFormatter": {"function": "d3.format(',.0f')(params.value)"},'cellDataType':'number','editable': True, 'cellStyle': {'background-color': '#FDF0B0'},'valueParser': {'function': 'Number(params.newValue)',"columnGroupShow": "open"},'hide':q1_toggle},
+                 {'headerName': 'SO Days','field': 'PROJ_SO_DAYS_Q1',"valueFormatter": {"function": "d3.format(',.0f')(params.value)"},'cellDataType':'number','editable': True, 'cellStyle': {'background-color': '#FFE39E'},'valueParser': {'function': 'Number(params.newValue)',"columnGroupShow": "open"},'hide':q1_toggle},
                  {'headerName': 'SH Days','field': 'PROJ_SH_DAYS_Q1','type':'numericColumn', "valueFormatter": {"function": "d3.format(',.0f')(params.value)"},'cellDataType':'number','valueParser': {'function': 'Number(params.newValue)'},"columnGroupShow": "open", 'hide':q1_toggle},
                  {
                      'headerName': 'In Stock',
@@ -671,7 +760,7 @@ def update_details(selected_rows):
                      'valueFormatter':{"function": "d3.format(',.1%')(params.value)"},
                      "columnGroupShow": "open",
                      'hide':q1_toggle,
-                     'cellStyle': {"function": "params.value < 1 ? {'background-color': '#ff8f8f'} : null"}
+                     'cellStyle': {"function": "params.value < 1 ? {'background-color': '#FF9696'} : null"}
                  },
                  
                  {
@@ -716,7 +805,7 @@ def update_details(selected_rows):
                      'valueFormatter':{"function": "d3.format(',.1%')(params.value)"},
                      "columnGroupShow": "open",
                      'hide':q1_toggle,
-                     'cellStyle': {"function": "params.value < 1 ? {'background-color': '#ff8f8f'} : null"}
+                     'cellStyle': {"function": "params.value < 1 ? {'background-color': '#FF9696'} : null"}
                  },
                  
                  
@@ -725,7 +814,7 @@ def update_details(selected_rows):
                      'field': 'manual_lrc_q1',
                      'valueGetter':{"function": "params.getValue('manual_in_stock_q1') < 1 && params.getValue('manual_sales_per_q1') < 1 ? Number(params.data.OP_UNITS_YTG_Q1) * (1 - params.getValue('manual_in_stock_q1')) : 0"},
                      "valueFormatter": {"function": "d3.format(',.0f')(params.value)"},
-                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#ff8f8f'} : null"},
+                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#FF9696'} : null"},
                      "columnGroupShow": "open",
                      'hide':q1_toggle
                  },
@@ -734,7 +823,7 @@ def update_details(selected_rows):
                      'field': 'manual_lrm_q1',
                      'valueGetter':{"function": "params.getValue('manual_in_stock_q1') < 1 && params.getValue('manual_sales_per_q1') < 1 ? Number(params.data.OP_UNITS_YTG_Q1) - params.getValue('total_sales_q1') : 0"},
                      "valueFormatter": {"function": "d3.format(',.0f')(params.value)"},
-                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#ff8f8f'} : null"},
+                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#FF9696'} : null"},
                      "columnGroupShow": "open",
                      'hide':q1_toggle
                      
@@ -745,17 +834,17 @@ def update_details(selected_rows):
                      'field': 'manual_lr_q1',
                      'valueGetter':{"function": "(params.getValue('total_sales_q1') + params.getValue('manual_lrc_q1')) > Number(params.data.OP_UNITS_YTG_Q1) ? params.getValue('manual_lrm_q1') : params.getValue('manual_lrc_q1')"},
                      "valueFormatter": {"function": "d3.format(',.0f')(params.value)"},
-                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#ff8f8f'} : null"},
+                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#FF9696'} : null"},
                      "columnGroupShow": "open",
                      'hide':q1_toggle,
-                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#ff8f8f'} : null"}
+                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#FF9696'} : null"}
                  },
                  {
                      'headerName': 'LR$',
                      'field': 'manual_lrusd_q1',
                      'valueGetter':{"function": "params.getValue('manual_lr_q1') * Number(params.data.ASP)"},
                      "valueFormatter": {"function": "d3.format('$,.0f')(params.value)"},
-                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#ff8f8f'} : null"},
+                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#FF9696'} : null"},
                      'hide':q1_toggle
                  }
              ],
@@ -764,7 +853,7 @@ def update_details(selected_rows):
             {'headerName': 'Quarter 2',
              'children': [
                  {'headerName': 'OP','field': 'OP_UNITS_YTG_Q2',"valueFormatter": {"function": "d3.format(',.0f')(params.value)"},'hide':q2_toggle},
-                 {'headerName': 'SO Days','field': 'PROJ_SO_DAYS_Q2',"valueFormatter": {"function": "d3.format(',.0f')(params.value)"},'cellDataType':'number','editable': True, 'cellStyle': {'background-color': '#FDF0B0'},'valueParser': {'function': 'Number(params.newValue)',"columnGroupShow": "open"},'hide':q2_toggle},
+                 {'headerName': 'SO Days','field': 'PROJ_SO_DAYS_Q2',"valueFormatter": {"function": "d3.format(',.0f')(params.value)"},'cellDataType':'number','editable': True, 'cellStyle': {'background-color': '#FFE39E'},'valueParser': {'function': 'Number(params.newValue)',"columnGroupShow": "open"},'hide':q2_toggle},
                  {'headerName': 'SH Days','field': 'PROJ_SH_DAYS_Q2','type':'numericColumn', "valueFormatter": {"function": "d3.format(',.0f')(params.value)"},'cellDataType':'number','valueParser': {'function': 'Number(params.newValue)'},"columnGroupShow": "open",'hide':q2_toggle},
                  {
                      'headerName': 'In Stock',
@@ -773,7 +862,7 @@ def update_details(selected_rows):
                      'valueFormatter':{"function": "d3.format(',.1%')(params.value)"},
                      "columnGroupShow": "open",
                      'hide':q2_toggle,
-                     'cellStyle': {"function": "params.value < 1 ? {'background-color': '#ff8f8f'} : null"}
+                     'cellStyle': {"function": "params.value < 1 ? {'background-color': '#FF9696'} : null"}
                  },
                  {
                      'headerName': 'skip_q1',
@@ -821,7 +910,7 @@ def update_details(selected_rows):
                      'valueFormatter':{"function": "d3.format(',.1%')(params.value)"},
                      "columnGroupShow": "open",
                      'hide':q2_toggle,
-                     'cellStyle': {"function": "params.value < 1 ? {'background-color': '#ff8f8f'} : null"}
+                     'cellStyle': {"function": "params.value < 1 ? {'background-color': '#FF9696'} : null"}
                  },
                  
                  
@@ -830,7 +919,7 @@ def update_details(selected_rows):
                      'field': 'manual_lrc_q2',
                      'valueGetter':{"function": "params.getValue('manual_in_stock_q2') < 1 && params.getValue('manual_sales_per_q2') < 1 ? Number(params.data.OP_UNITS_YTG_Q2) * (1 - params.getValue('manual_in_stock_q2')) : 0"},
                      "valueFormatter": {"function": "d3.format(',.0f')(params.value)"},
-                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#ff8f8f'} : null"},
+                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#FF9696'} : null"},
                      "columnGroupShow": "open",
                      'hide':q2_toggle
                  },
@@ -839,7 +928,7 @@ def update_details(selected_rows):
                      'field': 'manual_lrm_q2',
                      'valueGetter':{"function": "params.getValue('manual_in_stock_q2') < 1 && params.getValue('manual_sales_per_q2') < 1 ? Number(params.data.OP_UNITS_YTG_Q2) - params.getValue('total_sales_q2') : 0"},
                      "valueFormatter": {"function": "d3.format(',.0f')(params.value)"},
-                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#ff8f8f'} : null"},
+                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#FF9696'} : null"},
                      "columnGroupShow": "open",
                      'hide':q2_toggle
                  },
@@ -849,17 +938,17 @@ def update_details(selected_rows):
                      'field': 'manual_lr_q2',
                      'valueGetter':{"function": "(params.getValue('total_sales_q2') + params.getValue('manual_lrc_q2')) > Number(params.data.OP_UNITS_YTG_Q2) ? params.getValue('manual_lrm_q2') : params.getValue('manual_lrc_q2')"},
                      "valueFormatter": {"function": "d3.format(',.0f')(params.value)"},
-                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#ff8f8f'} : null"},
+                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#FF9696'} : null"},
                      "columnGroupShow": "open",
                      'hide':q2_toggle,
-                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#ff8f8f'} : null"}
+                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#FF9696'} : null"}
                  },
                  {
                      'headerName': 'LR$',
                      'field': 'manual_lrusd_q2',
                      'valueGetter':{"function": "params.getValue('manual_lr_q2') * Number(params.data.ASP)"},
                      "valueFormatter": {"function": "d3.format('$,.0f')(params.value)"},
-                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#ff8f8f'} : null"},
+                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#FF9696'} : null"},
                      'hide':q2_toggle
                  }
              ]
@@ -868,7 +957,7 @@ def update_details(selected_rows):
             {'headerName': 'Quarter 3',
              'children': [
                  {'headerName': 'OP','field': 'OP_UNITS_YTG_Q3',"valueFormatter": {"function": "d3.format(',.0f')(params.value)"},'hide':q3_toggle},
-                 {'headerName': 'SO Days','field': 'PROJ_SO_DAYS_Q3',"valueFormatter": {"function": "d3.format(',.0f')(params.value)"},'cellDataType':'number','editable': True, 'cellStyle': {'background-color': '#FDF0B0'},'valueParser': {'function': 'Number(params.newValue)',"columnGroupShow": "open"},'hide':q3_toggle},
+                 {'headerName': 'SO Days','field': 'PROJ_SO_DAYS_Q3',"valueFormatter": {"function": "d3.format(',.0f')(params.value)"},'cellDataType':'number','editable': True, 'cellStyle': {'background-color': '#FFE39E'},'valueParser': {'function': 'Number(params.newValue)',"columnGroupShow": "open"},'hide':q3_toggle},
                  {'headerName': 'SH Days','field': 'PROJ_SH_DAYS_Q3','type':'numericColumn', "valueFormatter": {"function": "d3.format(',.0f')(params.value)"},'cellDataType':'number','valueParser': {'function': 'Number(params.newValue)'},"columnGroupShow": "open",'hide':q3_toggle},
                  {
                      'headerName': 'In Stock',
@@ -877,7 +966,7 @@ def update_details(selected_rows):
                      'valueFormatter':{"function": "d3.format(',.1%')(params.value)"},
                      "columnGroupShow": "open",
                      'hide':q3_toggle,
-                     'cellStyle': {"function": "params.value < 1 ? {'background-color': '#ff8f8f'} : null"}
+                     'cellStyle': {"function": "params.value < 1 ? {'background-color': '#FF9696'} : null"}
                  },
                  
                  {
@@ -926,7 +1015,7 @@ def update_details(selected_rows):
                      'valueFormatter':{"function": "d3.format(',.1%')(params.value)"},
                      "columnGroupShow": "open",
                      'hide':q3_toggle,
-                     'cellStyle': {"function": "params.value < 1 ? {'background-color': '#ff8f8f'} : null"}
+                     'cellStyle': {"function": "params.value < 1 ? {'background-color': '#FF9696'} : null"}
                  },
                  
                  
@@ -935,7 +1024,7 @@ def update_details(selected_rows):
                      'field': 'manual_lrc_q3',
                      'valueGetter':{"function": "params.getValue('manual_in_stock_q3') < 1 && params.getValue('manual_sales_per_q3') < 1 ? Number(params.data.OP_UNITS_YTG_Q3) * (1 - params.getValue('manual_in_stock_q3')) : 0"},
                      "valueFormatter": {"function": "d3.format(',.0f')(params.value)"},
-                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#ff8f8f'} : null"},
+                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#FF9696'} : null"},
                      "columnGroupShow": "open",
                      'hide':q3_toggle
                  },
@@ -944,7 +1033,7 @@ def update_details(selected_rows):
                      'field': 'manual_lrm_q3',
                      'valueGetter':{"function": "params.getValue('manual_in_stock_q3') < 1 && params.getValue('manual_sales_per_q3') < 1 ? Number(params.data.OP_UNITS_YTG_Q3) - params.getValue('total_sales_q3') : 0"},
                      "valueFormatter": {"function": "d3.format(',.0f')(params.value)"},
-                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#ff8f8f'} : null"},
+                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#FF9696'} : null"},
                      "columnGroupShow": "open",
                      'hide':q3_toggle
                  },
@@ -954,17 +1043,17 @@ def update_details(selected_rows):
                      'field': 'manual_lr_q3',
                      'valueGetter':{"function": "(params.getValue('total_sales_q3') + params.getValue('manual_lrc_q3')) > Number(params.data.OP_UNITS_YTG_Q3) ? params.getValue('manual_lrm_q3') : params.getValue('manual_lrc_q3')"},
                      "valueFormatter": {"function": "d3.format(',.0f')(params.value)"},
-                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#ff8f8f'} : null"},
+                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#FF9696'} : null"},
                      "columnGroupShow": "open",
                      'hide':q3_toggle,
-                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#ff8f8f'} : null"}
+                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#FF9696'} : null"}
                  },
                  {
                      'headerName': 'LR$',
                      'field': 'manual_lrusd_q3',
                      'valueGetter':{"function": "params.getValue('manual_lr_q3') * Number(params.data.ASP)"},
                      "valueFormatter": {"function": "d3.format('$,.0f')(params.value)"},
-                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#ff8f8f'} : null"},
+                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#FF9696'} : null"},
                      'hide':q3_toggle
                  }
              ]
@@ -973,7 +1062,7 @@ def update_details(selected_rows):
             {'headerName': 'Quarter 4',
              'children': [
                  {'headerName': 'OP','field': 'OP_UNITS_YTG_Q4',"valueFormatter": {"function": "d3.format(',.0f')(params.value)"},'hide':q4_toggle},
-                 {'headerName': 'SO Days','field': 'PROJ_SO_DAYS_Q4',"valueFormatter": {"function": "d3.format(',.0f')(params.value)"},'cellDataType':'number','editable': True, 'cellStyle': {'background-color': '#FDF0B0'},'valueParser': {'function': 'Number(params.newValue)',"columnGroupShow": "open"},'hide':q4_toggle},
+                 {'headerName': 'SO Days','field': 'PROJ_SO_DAYS_Q4',"valueFormatter": {"function": "d3.format(',.0f')(params.value)"},'cellDataType':'number','editable': True, 'cellStyle': {'background-color': '#FFE39E'},'valueParser': {'function': 'Number(params.newValue)',"columnGroupShow": "open"},'hide':q4_toggle},
                  {'headerName': 'SH Days','field': 'PROJ_SH_DAYS_Q4','type':'numericColumn', "valueFormatter": {"function": "d3.format(',.0f')(params.value)"},'cellDataType':'number','valueParser': {'function': 'Number(params.newValue)'},"columnGroupShow": "open",'hide':q4_toggle},
                  {
                      'headerName': 'In Stock',
@@ -982,7 +1071,7 @@ def update_details(selected_rows):
                      'valueFormatter':{"function": "d3.format(',.1%')(params.value)"},
                      "columnGroupShow": "open",
                      'hide':q4_toggle,
-                     'cellStyle': {"function": "params.value < 1 ? {'background-color': '#ff8f8f'} : null"}
+                     'cellStyle': {"function": "params.value < 1 ? {'background-color': '#FF9696'} : null"}
                  },
                  
                  {
@@ -1031,7 +1120,7 @@ def update_details(selected_rows):
                      'valueFormatter':{"function": "d3.format(',.1%')(params.value)"},
                      "columnGroupShow": "open",
                      'hide':q4_toggle,
-                     'cellStyle': {"function": "params.value < 1 ? {'background-color': '#ff8f8f'} : null"}
+                     'cellStyle': {"function": "params.value < 1 ? {'background-color': '#FF9696'} : null"}
                  },
                  
                  
@@ -1040,7 +1129,7 @@ def update_details(selected_rows):
                      'field': 'manual_lrc_q4',
                      'valueGetter':{"function": "params.getValue('manual_in_stock_q4') < 1 && params.getValue('manual_sales_per_q4') < 1 ? Number(params.data.OP_UNITS_YTG_Q4) * (1 - params.getValue('manual_in_stock_q4')) : 0"},
                      "valueFormatter": {"function": "d3.format(',.0f')(params.value)"},
-                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#ff8f8f'} : null"},
+                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#FF9696'} : null"},
                      "columnGroupShow": "open",
                      'hide':q4_toggle
                  },
@@ -1049,7 +1138,7 @@ def update_details(selected_rows):
                      'field': 'manual_lrm_q4',
                      'valueGetter':{"function": "params.getValue('manual_in_stock_q4') < 1 && params.getValue('manual_sales_per_q4') < 1 ? Number(params.data.OP_UNITS_YTG_Q4) - params.getValue('total_sales_q4') : 0"},
                      "valueFormatter": {"function": "d3.format(',.0f')(params.value)"},
-                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#ff8f8f'} : null"},
+                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#FF9696'} : null"},
                      "columnGroupShow": "open",
                      'hide':q4_toggle
                  },
@@ -1059,17 +1148,17 @@ def update_details(selected_rows):
                      'field': 'manual_lr_q4',
                      'valueGetter':{"function": "(params.getValue('total_sales_q4') + params.getValue('manual_lrc_q4')) > Number(params.data.OP_UNITS_YTG_Q4) ? params.getValue('manual_lrm_q4') : params.getValue('manual_lrc_q4')"},
                      "valueFormatter": {"function": "d3.format(',.0f')(params.value)"},
-                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#ff8f8f'} : null"},
+                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#FF9696'} : null"},
                      "columnGroupShow": "open",
                      'hide':q4_toggle,
-                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#ff8f8f'} : null"}
+                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#FF9696'} : null"}
                  },
                  {
                      'headerName': 'LR$',
                      'field': 'manual_lrusd_q4',
                      'valueGetter':{"function": "params.getValue('manual_lr_q4') * Number(params.data.ASP)"},
                      "valueFormatter": {"function": "d3.format('$,.0f')(params.value)"},
-                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#ff8f8f'} : null"},
+                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#FF9696'} : null"},
                      'hide':q4_toggle
                  }
              ]
@@ -1080,13 +1169,13 @@ def update_details(selected_rows):
              'children': [
                  {'headerName': 'OP','field': 'manual_ytg_op',"valueFormatter": {"function": "d3.format(',.0f')(params.value)"}, "columnGroupShow": "open", 'valueGetter':{"function": "Number(params.data.OP_UNITS_YTG_Q1) + Number(params.data.OP_UNITS_YTG_Q2) + Number(params.data.OP_UNITS_YTG_Q3) + Number(params.data.OP_UNITS_YTG_Q4)"}},
                  {'headerName': 'Sales','field': 'manual_ytg_sales',"valueFormatter": {"function": "d3.format(',.0f')(params.value)"}, "columnGroupShow": "open", 'valueGetter':{"function": "params.getValue('manual_proj_sales_q1') + params.getValue('manual_proj_sales_q2') + params.getValue('manual_proj_sales_q3') + params.getValue('manual_proj_sales_q4')"}},
-                 {'headerName': 'Sales Perf.','field': 'manual_ytg_perf',"valueFormatter": {"function": "d3.format('.0%')(params.value)"},'cellStyle': {"function": "params.value < 1 ? {'background-color': '#ff8f8f'} : null"}, "columnGroupShow": "open", 'valueGetter':{"function": "params.getValue('manual_ytg_op') === 0 ? 0 : params.getValue('manual_ytg_sales') / params.getValue('manual_ytg_op')"}},
+                 {'headerName': 'Sales Perf.','field': 'manual_ytg_perf',"valueFormatter": {"function": "d3.format('.0%')(params.value)"},'cellStyle': {"function": "params.value < 1 ? {'background-color': '#FF9696'} : null"}, "columnGroupShow": "open", 'valueGetter':{"function": "params.getValue('manual_ytg_op') === 0 ? 0 : params.getValue('manual_ytg_sales') / params.getValue('manual_ytg_op')"}},
                  {
                      'headerName': 'LR C',
                      'field': 'manual_lrc_ytg',
                      'valueGetter':{"function": "params.getValue('manual_lrc_q1') +params.getValue('manual_lrc_q2') +params.getValue('manual_lrc_q3')+params.getValue('manual_lrc_q4')"},
                      "valueFormatter": {"function": "d3.format(',.0f')(params.value)"},
-                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#ff8f8f'} : null"},
+                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#FF9696'} : null"},
                      "columnGroupShow": "open",
                  },
                  {
@@ -1094,7 +1183,7 @@ def update_details(selected_rows):
                      'field': 'manual_lrm_ytg',
                      'valueGetter':{"function": "params.getValue('manual_lrm_q1') +params.getValue('manual_lrm_q2') +params.getValue('manual_lrm_q3')+params.getValue('manual_lrm_q4')"},
                      "valueFormatter": {"function": "d3.format(',.0f')(params.value)"},
-                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#ff8f8f'} : null"},
+                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#FF9696'} : null"},
                      "columnGroupShow": "open",
                  },
                  
@@ -1103,16 +1192,16 @@ def update_details(selected_rows):
                      'field': 'manual_lr_ytg',
                      'valueGetter':{"function": "params.getValue('manual_lr_q1') +params.getValue('manual_lr_q2') +params.getValue('manual_lr_q3')+params.getValue('manual_lr_q4')"},
                      "valueFormatter": {"function": "d3.format(',.0f')(params.value)"},
-                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#ff8f8f'} : null"},
+                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#FF9696'} : null"},
                      "columnGroupShow": "open",
-                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#ff8f8f'} : null"}
+                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#FF9696'} : null"}
                  },
                  {
                      'headerName': 'LR$',
                      'field': 'manual_lrusd_ytg',
                      'valueGetter':{"function": "params.getValue('manual_lr_ytg') * Number(params.data.ASP)"},
                      "valueFormatter": {"function": "d3.format('$,.0f')(params.value)"},
-                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#ff8f8f'} : null"},
+                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#FF9696'} : null"},
                  }
              ]
             },
@@ -1124,7 +1213,7 @@ def update_details(selected_rows):
                      'headerName': 'Sales',
                      'field': 'manual_fy_sales',
                      "valueFormatter": {"function": "d3.format(',.0f')(params.value)"}, "columnGroupShow": "open", 'valueGetter':{"function": "params.data.TOTAL_SALES_YTD + params.getValue('manual_proj_sales_q1') + params.getValue('manual_proj_sales_q2') + params.getValue('manual_proj_sales_q3') + params.getValue('manual_proj_sales_q4')"}},
-                 {'headerName': 'Excess','field': 'manual_fy_excess',"valueFormatter": {"function": "d3.format('.0%')(params.value)"},'cellStyle': {"function": "params.value < 1 ? {'background-color': '#ff8f8f'} : null"}, "columnGroupShow": "open", 'valueGetter':{"function": "params.getValue('manual_fy_sales') > params.getValue('manual_fy_op') ? params.getValue('manual_fy_sales') - params.getValue('manual_fy_op') : 0"}},
+                 {'headerName': 'Excess','field': 'manual_fy_excess',"valueFormatter": {"function": "d3.format('.0%')(params.value)"},'cellStyle': {"function": "params.value < 1 ? {'background-color': '#FF9696'} : null"}, "columnGroupShow": "open", 'valueGetter':{"function": "params.getValue('manual_fy_sales') > params.getValue('manual_fy_op') ? params.getValue('manual_fy_sales') - params.getValue('manual_fy_op') : 0"}},
                  {'headerName': 'SO Days','field': 'manual_fy_so',"valueFormatter": {"function": "d3.format(',.0f')(params.value)"},'cellDataType':'number', 'cellStyle': {'background-color': '#FDF0B0'},'valueParser': {'function': 'Number(params.newValue)'},"columnGroupShow": "open", 'valueGetter':{"function": "params.data.TOTAL_SO_DAYS_YTD + Number(params.data.PROJ_SO_DAYS_Q1) + Number(params.data.PROJ_SO_DAYS_Q2) + Number(params.data.PROJ_SO_DAYS_Q3) + Number(params.data.PROJ_SO_DAYS_Q4)"}},
                  {'headerName': 'SH Days','field': 'manual_fy_sh','type':'numericColumn', "valueFormatter": {"function": "d3.format(',.0f')(params.value)"},'cellDataType':'number','valueParser': {'function': 'Number(params.newValue)'},"columnGroupShow": "open", 'valueGetter':{"function": "params.data.TOTAL_SH_DAYS_YTD + Number(params.data.PROJ_SH_DAYS_Q1) + Number(params.data.PROJ_SH_DAYS_Q2) + Number(params.data.PROJ_SH_DAYS_Q3) + Number(params.data.PROJ_SH_DAYS_Q4)"}},
                  {'headerName': 'In Stock','field':'manual_fy_is','valueFormatter':{"function": "d3.format(',.1%')(params.value)"},"columnGroupShow": "open", 'valueGetter':{"function": "params.getValue('manual_fy_sh') === 0 ? 1 : 1-(Number(params.getValue('manual_fy_so')) / Number(params.getValue('manual_fy_sh')))"}},
@@ -1134,16 +1223,16 @@ def update_details(selected_rows):
                      'field': 'manual_lr_fy',
                      'valueGetter':{"function": "params.getValue('manual_lr_ytg') + Number(params.data.TOTAL_LR_YTD)"},
                      "valueFormatter": {"function": "d3.format(',.0f')(params.value)"},
-                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#ff8f8f'} : null"},
+                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#FF9696'} : null"},
                      "columnGroupShow": "open",
-                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#ff8f8f'} : null"}
+                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#FF9696'} : null"}
                  },
                  {
                      'headerName': 'LR$',
                      'field': 'manual_lrusd_fy',
                      'valueGetter':{"function": "params.getValue('manual_lr_fy') * Number(params.data.ASP)"},
                      "valueFormatter": {"function": "d3.format('$,.0f')(params.value)"},
-                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#ff8f8f'} : null"},
+                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#FF9696'} : null"},
                  },
                  
                  {
@@ -1151,7 +1240,7 @@ def update_details(selected_rows):
                      'field': 'manual_urusd_fy',
                      'valueGetter':{"function": "params.getValue('manual_fy_excess') * Number(params.data.ASP)"},
                      "valueFormatter": {"function": "d3.format('$,.0f')(params.value)"},
-                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#92d050'} : null"},
+                     'cellStyle': {"function": "params.value > 0 ? {'background-color': '#B8E8B3'} : null"},
                  }
              ]
             },
@@ -1186,7 +1275,7 @@ def update_details(selected_rows):
             'wrapHeaderText': True,
         },
         style={'height':'500px','font-size':'11px'},
-        rowStyle={'font-size': '11px'},
+        rowStyle={'font-size': '11px','font-family':'Roboto'},
         csvExportParams={
                 "fileName": "lost_revenue_extract.csv",
             },
@@ -1237,23 +1326,34 @@ def update_siq_details(selected_rows):
     
     return siq_ag_grid
 
+
 @app.callback(
-    Output("output-data-refresh", "children"),
     [
-        Input('save-data-btn','n_clicks'),
-        Input('string-output','data'),
+        Output("modal-centered","is_open"),
+        Output("trigger-memory","data")
     ],
-    State('details-ag-grid','rowData'),
+    Input('save-data-btn','n_clicks')
+)
+
+def show_modal(n):
+    if n > 0:
+        return True, 'Done'
+    return False, None
+
+
+@app.callback(
+    Output("modal-header", "close_button"),
+    Input('trigger-memory','data'),
+    State('details-ag-grid','rowData')
 )
     
-def save_data_to_dataframe(n_clicks, string_data, rowData):
-    if n_clicks > 0:
+def save_data_to_dataframe(trigger, rowData):
+    print('at least started')
+    if trigger is not None:
         if not rowData:
-            return html.P('No data to save!!! :(')
-        start_time = datetime.datetime.now() 
+            return True
 
-        
-        user_log = string_data
+        user_log = username
         
         output_df = pd.DataFrame(rowData)
         new_edits = dataiku.Dataset("LR_APP_EDITS")
@@ -1273,7 +1373,7 @@ def save_data_to_dataframe(n_clicks, string_data, rowData):
         output_df['LRM_YTD'] = output_df.apply(lambda row: (row['TOTAL_OP_UNITS_YTD'] - row['TOTAL_SALES_YTD']) if row['TOTAL_SALES_YTD'] < row['TOTAL_OP_UNITS_YTD'] and row['PROJ_IS_YTD'] < 1 else 0, axis=1)
         output_df['LR_EVAL_YTD'] = output_df.apply(lambda row: (row['TOTAL_SALES_YTD'] + row['LRC_YTD']), axis=1)
         output_df['PROJ_LR_YTD'] = output_df.apply(lambda row: (row['LRM_YTD']) if row['LR_EVAL_YTD'] > row['TOTAL_OP_UNITS_YTD'] else row['LRC_YTD'], axis=1)
-        output_df['PROJ_LR_USD_YTD'] = output_df.apply(lambda row: (row['PROJ_LR_YTD'] * row['ASP']), axis=1)
+        output_df['PROJ_LR_USD_YTD'] = output_df.apply(lambda row: (row['PROJ_LR_YTD'] * row['ASP'] if row['PROJ_LR_YTD'] > 0 else 0), axis=1)
         
         #RECALCULATING Q1 FIGURES
         output_df['PROJ_IS_Q1'] = output_df.apply(lambda row: 1- (row['PROJ_SO_DAYS_Q1'] / row['PROJ_SH_DAYS_Q1']) if row['PROJ_SH_DAYS_Q1'] != 0 else 1, axis=1)
@@ -1327,22 +1427,20 @@ def save_data_to_dataframe(n_clicks, string_data, rowData):
         output_df['PROJ_LR_Q4'] = output_df.apply(lambda row: row['LRM_Q4'] if (row['TOTAL_SALES_Q4'] + row['LRC_Q4']) > row['OP_UNITS_YTG_Q4'] else row['LRC_Q4'], axis=1)
         output_df['PROJ_LR_USD_Q4'] = output_df.apply(lambda row: (row['PROJ_LR_Q4'] * row['ASP']), axis=1)
         
+        #RECALCULATING YTG FIGURES
+        output_df['PROJ_LR_YTG'] = output_df.apply(lambda row: (row['PROJ_LR_Q1'] + row['PROJ_LR_Q2'] + row['PROJ_LR_Q3'] + row['PROJ_LR_Q4']) if row['PROJ_LR_Q1'] + row['PROJ_LR_Q2'] + row['PROJ_LR_Q3'] + row['PROJ_LR_Q4'] > 0 else 0, axis=1)
+        output_df['PROJ_LR_USD_YTG'] = output_df.apply(lambda row: (row['PROJ_LR_YTG'] * row['ASP']), axis=1)
+        
         output_df = new_edits_df.append(output_df)
         
         
         output_string = output_df.to_string()
         ds_output.write_with_schema(output_df,drop_and_create=False)
         scenario.run_and_wait()
-        
-        current_time = datetime.datetime.now() 
-        duration = current_time - start_time
-        
-        output_div = html.Div([
-            dbc.Alert(f"Changes have been properly stored in a total duration of: {duration}.", color="success"),
-        ])
-        
-        
-        return output_div
+        print('it finished')
+        status_message = 'the job is now done'
+        print(status_message)
+        return True
     
 @app.callback(
     [
