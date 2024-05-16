@@ -1238,7 +1238,7 @@ def update_siq_details(selected_rows):
     return siq_ag_grid
 
 @app.callback(
-    Output("confirm-save", "displayed"),
+    Output("output-data-refresh", "children"),
     [
         Input('save-data-btn','n_clicks'),
         Input('string-output','data'),
@@ -1249,7 +1249,7 @@ def update_siq_details(selected_rows):
 def save_data_to_dataframe(n_clicks, string_data, rowData):
     if n_clicks > 0:
         if not rowData:
-            return 'No data to save!!! :('
+            return html.P('No data to save!!! :(')
         start_time = datetime.datetime.now() 
 
         
@@ -1337,8 +1337,12 @@ def save_data_to_dataframe(n_clicks, string_data, rowData):
         current_time = datetime.datetime.now() 
         duration = current_time - start_time
         
+        output_div = html.Div([
+            dbc.Alert(f"Changes have been properly stored in a total duration of: {duration}.", color="success"),
+        ])
         
-        return True
+        
+        return output_div
     
 @app.callback(
     [
