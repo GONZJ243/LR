@@ -29,7 +29,10 @@ app.config.suppress_callback_exceptions = True
 
 
 def initial_data():
-    # Pulling the source database from Dataiku, converting it to dataframe for further manipulation
+    '''
+    This function generates the initial data state, by pulling the dataiku server data on start-up callback.
+    After the initial callback, the data is converted to a dataframe, to ease further processing.
+    '''
     dataset = dataiku.Dataset("LR_FINAL_DATASET")
     df = dataset.get_dataframe()
     return df
@@ -43,6 +46,7 @@ edits = dataiku.Dataset("LR_APP_EDITS")
 siq_dataset = dataiku.Dataset("SIQ_APP_DATA")
 df_siq = siq_dataset.get_dataframe()
 edits_df = edits.get_dataframe()
+ds_output = dataiku.Dataset("LR_APP_EDITS")
 
 # Forcing numeric format into required fields, to enable aggregation
 df['TOTAL_DOLLARS_LR_YTD'] = pd.to_numeric(df['TOTAL_DOLLARS_LR_YTD'], errors='coerce')
@@ -115,13 +119,8 @@ q2_toggle = not df['Q2_VISIBILITY'].mode().values[0]
 q3_toggle = not df['Q3_VISIBILITY'].mode().values[0]
 q4_toggle = not df['Q4_VISIBILITY'].mode().values[0]
 
-
-#Predefining the table that will receive the edited data on confirmation
-ds_output = dataiku.Dataset("LR_APP_EDITS")
-
 #Username propagation
 client = dataiku.api_client()
-
 
 @app.callback(
     #Dash callback function: this function will be automatically triggered on start, to identify logged in user
@@ -159,39 +158,130 @@ scenario = project.get_scenario("UPDATE_DATA_FOR_APP")
 #Generating modal for changes confirmation
 
 
-#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#Generating main page's layout
-#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+'''
+Generating main page's layout
+'''
+
 def serve_layout():
+    '''
+    This function will generate the app's initial layout. 
+    The layout is generated through callbacks to guarantee the app makes a server call to retrieve the latest available data.
+    '''
+    
     #Defining navigation bar layout
+    '''
+    This navbar will look like the table below:
+    
+    | Logo | Spacer | Header | Feedback | Documentation | Username |
+    
+    '''
     navbar1 = dbc.Container(
         dbc.Row(
             [
                 dbc.Col(
                     html.Img(
                         src='https://brandid.pfizer.com/sites/default/files/images/logo-hierarchy-left.png',
-                        style={
-                            'display': 'block',
-                            'max-width':'230px',
-                            'max-height':'45px',
-                            'width': 'auto',
-                            'height': 'auto',
-                        }
+                        style={'display': 'block','max-width':'230px','max-height':'45px','width': 'auto','height': 'auto'}
                     ),
+                    id='navbar_logo',
                     width=1,
                     align='center'
                 ),
-
-
-                dbc.Col(id='spacer',width=9),
-
-
+                dbc.Col(
+                    html.H1('LATAM Lost Revenue Application'),
+                    id='navbar_spacer',
+                    width=8
+                ),
+                dbc.Col(
+                    dbc.Button(
+                       'Feedback',
+                       href='https://jira.pfizer.com/servicedesk/customer/portal/189/create/3684',
+                       target='_blank',
+                       style={
+                           'color':'#0000C9',
+                           'background-color':'white',
+                           'border-color':'#0000C9',
+                           'border-style':'solid',
+                           'border-width':'1px',
+                           'font-family':'Roboto',
+                           'border-radius':'45px',
+                           'width': '100%',
+                           'height':'50px',
+                           'justify':'center',
+                           'align':'center',
+                           'text-transform':'capitalize',
+                           'box-shadow':'None'
+                       }
+                   ),
+                    id='navbar_feedback',
+                    width=1
+                ),
+                dbc.Col(
+                    dbc.Button(
+                       'Documentation',
+                       href='https://dss-amer-dev.pfizer.com/projects/AMRA_LOSTREVENUECALCULATION/wiki/1/LATAM%20Lost%20Revenue%20Wiki',
+                       target='_blank',
+                       style={
+                           'color':'#0000C9',
+                           'background-color':'white',
+                           'border-color':'#0000C9',
+                           'border-style':'solid',
+                           'border-width':'1px',
+                           'font-family':'Roboto',
+                           'border-radius':'45px',
+                           'width': '100%',
+                           'height':'50px',
+                           'justify':'center',
+                           'align':'center',
+                           'text-transform':'capitalize',
+                           'box-shadow':'None'
+                       }
+                   ),
+                    id='navbar_doc',
+                    width=1
+                ),
+                dbc.Col(
+                    html.Div(
+                        style={
+                            'display':'flex',
+                            'justify-content':'center',
+                            'align-items':'center',
+                            'height':'100%'
+                        },
+                        children=[
+                            html.Div(
+                                style={
+                                    'position':'relative',
+                                    'width':'50px',
+                                    'height':'50px',
+                                    'border-radius':'50%',
+                                    'background-color':'lightblue',
+                                    'display':'flex',
+                                    'justify-content':'center',
+                                    'align-items':'center'
+                                },
+                                children=[
+                                    html.Img(
+                                        src='https://brandid.pfizer.com/sites/default/files/accordion/icon_user_user_0.svg',
+                                        style={
+                                            'width': '50%',
+                                            'height':'50%'
+                                        }
+                                    )
+                                ]
+                            )
+                            
+                        ]
+                    ),
+                    id='navbar_user',
+                    width=1
+                ),
             ],
             style = {
-                'height': '50px',
+                'height': '70px',
                 'background-color':'white',
                 'width': '95vw',
-                'padding':'0px',
+                'padding':'10px',
                 'margin':'0px'
             }
         ),
