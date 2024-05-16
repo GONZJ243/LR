@@ -175,7 +175,7 @@ def serve_layout():
     | Logo | Spacer | Header | Feedback | Documentation | Username |
     
     '''
-    navbar1 = dbc.Container(
+    navbar = dbc.Container(
         dbc.Row(
             [
                 dbc.Col(
@@ -241,38 +241,26 @@ def serve_layout():
                     width=1
                 ),
                 dbc.Col(
-                    html.Div(
-                        style={
-                            'display':'flex',
-                            'justify-content':'center',
-                            'align-items':'center',
-                            'height':'100%'
-                        },
-                        children=[
-                            html.Div(
-                                style={
-                                    'position':'relative',
-                                    'width':'50px',
-                                    'height':'50px',
-                                    'border-radius':'50%',
-                                    'background-color':'lightblue',
-                                    'display':'flex',
-                                    'justify-content':'center',
-                                    'align-items':'center'
-                                },
-                                children=[
-                                    html.Img(
-                                        src='https://brandid.pfizer.com/sites/default/files/accordion/icon_user_user_0.svg',
-                                        style={
-                                            'width': '50%',
-                                            'height':'50%'
-                                        }
-                                    )
-                                ]
-                            )
-                            
-                        ]
-                    ),
+                    dbc.Button(
+                       username,
+                       href='',
+                       target='_blank',
+                       style={
+                           'color':'#0000C9',
+                           'background-color':'white',
+                           'border-color':'#0000C9',
+                           'border-style':'solid',
+                           'border-width':'1px',
+                           'font-family':'Roboto',
+                           'border-radius':'45px',
+                           'width': '100%',
+                           'height':'50px',
+                           'justify':'center',
+                           'align':'center',
+                           'text-transform':'capitalize',
+                           'box-shadow':'None'
+                       },
+                   ),
                     id='navbar_user',
                     width=1
                 ),
@@ -289,22 +277,6 @@ def serve_layout():
           'box-shadow':'5px 0px #f2f2f8'  
         },
         fluid=True
-    )
-
-    
-    
-    navbar = dbc.NavbarSimple(
-        [
-            dbc.NavItem(dbc.NavLink("Documentation", href='https://dss-amer-dev.pfizer.com/projects/AMRA_LOSTREVENUECALCULATION/wiki/1/LATAM%20Lost%20Revenue%20Wiki',target="_blank")),
-            dbc.NavItem(dbc.NavLink("Provide Feedback", href='https://jira.pfizer.com/servicedesk/customer/portal/189/create/3769',target="_blank")),
-            html.Div(id='user-output',style={'display':'None'}),
-            dcc.Store(id='string-output',data=''),
-            html.Div(id='dummy') #Dummy div will act as auto-trigger for user identification callbacks
-        ],
-        brand="Americas Reporting & Analytics",
-        brand_href="#",
-        color="primary",
-        dark=True,
     )
     
     #Defining main page's content layout
@@ -454,7 +426,6 @@ def serve_layout():
         className="dbc dbc-row-selectable")
 
     layout_page_1 = html.Div([
-        navbar1,
         navbar,
         content
         ]
