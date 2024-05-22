@@ -240,7 +240,7 @@ def serve_layout():
                            'align':'center',
                            'text-transform':'capitalize',
                            'box-shadow':'None',
-                           'font-size':'14px'
+                           'font-size':'12px'
                            
                        }
                    ),
@@ -266,7 +266,7 @@ def serve_layout():
                            'align':'center',
                            'text-transform':'capitalize',
                            'box-shadow':'None',
-                           'font-size':'14px'
+                           'font-size':'12px'
                        }
                    ),
                     id='navbar_doc',
@@ -291,7 +291,7 @@ def serve_layout():
                            'align':'center',
                            'text-transform':'uppercase',
                            'box-shadow':'None',
-                           'font-size':'14px'
+                           'font-size':'12px'
                        },
                    ),
                     id='navbar_user',
@@ -491,7 +491,7 @@ def serve_layout():
                        'align':'center',
                        'text-transform':'capitalize',
                        'box-shadow':'None',
-                       'font-size':'14px',
+                       'font-size':'12px',
                        'margin':'20px'
 
                    }
@@ -618,7 +618,7 @@ def update_ag_grid(selected_value_srg, selected_value_clu, selected_value_mkt,
         ],
         rowData=filtered_df.to_dict('records'),
         style={'height':'600px','font-size':'11px'},
-        rowStyle={'font-size': '11px'},
+        rowStyle={'font-size': '11px','font-family':'Roboto','text-align':'left'},
         columnSize = 'responsiveSizeToFit',
         dashGridOptions ={
             "animateRows":False,
@@ -1430,6 +1430,14 @@ def save_data_to_dataframe(trigger, rowData):
         #RECALCULATING YTG FIGURES
         output_df['PROJ_LR_YTG'] = output_df.apply(lambda row: (row['PROJ_LR_Q1'] + row['PROJ_LR_Q2'] + row['PROJ_LR_Q3'] + row['PROJ_LR_Q4']) if row['PROJ_LR_Q1'] + row['PROJ_LR_Q2'] + row['PROJ_LR_Q3'] + row['PROJ_LR_Q4'] > 0 else 0, axis=1)
         output_df['PROJ_LR_USD_YTG'] = output_df.apply(lambda row: (row['PROJ_LR_YTG'] * row['ASP']), axis=1)
+        
+        #RECALCULATING FY FIGURES
+        output_df['LR_FY'] = output_df.apply(lambda row: (row['PROJ_LR_YTD'] + row['PROJ_LR_YTG']) if row['PROJ_LR_YTD'] + row['PROJ_LR_YTG'] > 0 else 0, axis=1)
+        output_df['LR_USD_FY'] = output_df.apply(lambda row: (row['LR_FY'] * row['ASP']), axis=1)
+        
+        
+        
+        
         
         output_df = new_edits_df.append(output_df)
         
